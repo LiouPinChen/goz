@@ -18,7 +18,7 @@ import (
 // Request object
 type Request struct {
 	opts Options
-	cli  *http.Client
+	Cli  *http.Client
 	req  *http.Request
 	body io.Reader
 }
@@ -104,7 +104,7 @@ func (r *Request) Request(method, uri string, opts ...Options) (*Response, error
 		}
 	}
 
-	_resp, err := r.cli.Do(r.req)
+	_resp, err := r.Cli.Do(r.req)
 
 	resp := &Response{
 		resp: _resp,
@@ -150,7 +150,7 @@ func (r *Request) parseClient() {
 		}
 	}
 
-	r.cli = &http.Client{
+	r.Cli = &http.Client{
 		Timeout:   r.opts.timeout,
 		Transport: tr,
 	}

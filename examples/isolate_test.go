@@ -3,6 +3,8 @@ package goz
 import (
 	"fmt"
 	"github.com/idoubi/goz"
+	"github.com/jarcoal/httpmock"
+	"io/ioutil"
 	"log"
 	"testing"
 )
@@ -38,13 +40,17 @@ func main() {
 
 // 先建立單元測試隔離的測試環境，這裡測試要引入容器之後再處理
 func Test_Example_Isolate(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
 	cli := goz.NewClient()
-	resp, err := cli.Get("http://172.17.0.1:9000/temporary")
+
+	resp, err := cli.Cli.Get("http://172.17.0.1:9000/temporary")
 	if err != nil {
 		log.Fatalln(err)
 	}
 
-	body, _ := resp.GetBody()
-	fmt.Println(resp.GetStatusCode(), body)
+	body, _ := ioutil.ReadAll(resp.Body)
+	fmt.Println(string(body))
 	// Output: 200
 }
