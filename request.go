@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/jarcoal/httpmock"
 	"io"
 	"log"
 	"net/http"
@@ -21,6 +22,11 @@ type Request struct {
 	cli  *http.Client
 	req  *http.Request
 	body io.Reader
+}
+
+// Replace client
+func (r *Request) ReplaceCli(cli  *http.Client) {
+	r.cli = cli
 }
 
 // Get send get request
@@ -55,6 +61,16 @@ func (r *Request) Options(uri string, opts ...Options) (*Response, error) {
 
 // Request send request
 func (r *Request) Request(method, uri string, opts ...Options) (*Response, error) {
+	//if len(httpmock.GetCallCountInfo()) > 0 {
+	//
+	//	tmp, _ := r.cli.Get(uri)
+	//
+	//	// tmp, _ := r.cli.Get(uri)
+	//	test := Response{}
+	//	test.resp = tmp
+	//	return &test, nil
+	//}
+
 	if len(opts) > 0 {
 		r.opts = opts[0]
 	}
@@ -84,14 +100,27 @@ func (r *Request) Request(method, uri string, opts ...Options) (*Response, error
 	// parseOptions
 	r.parseOptions()
 
+
+
 	// parseClient
-	r.parseClient()
+	// if len(httpmock.GetCallCountInfo()) == 0 {
+		r.parseClient()
+	// }
+
+	/*if len(httpmock.GetCallCountInfo()) > 0 {
+		tmp, _ := r.cli.Get(uri)
+		test := Response{}
+		test.resp = tmp
+		return &test, nil
+	}*/
 
 	// parse query
 	r.parseQuery()
 
 	// parse headers
 	r.parseHeaders()
+
+
 
 	// parse cookies
 	r.parseCookies()
@@ -105,6 +134,8 @@ func (r *Request) Request(method, uri string, opts ...Options) (*Response, error
 	}
 
 	_resp, err := r.cli.Do(r.req)
+
+
 
 	resp := &Response{
 		resp: _resp,
@@ -139,20 +170,35 @@ func (r *Request) parseOptions() {
 }
 
 func (r *Request) parseClient() {
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-	}
+	// if len(httpmock.GetCallCountInfo()) == 0 {
 
-	if r.opts.Proxy != "" {
-		proxy, err := url.Parse(r.opts.Proxy)
-		if err == nil {
-			tr.Proxy = http.ProxyURL(proxy)
+	// if len(httpmock.GetCallCountInfo()) == 0 {
+		tr := &http.Transport{
+			TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+		}
+	// }
+
+
+		if r.opts.Proxy != "" {
+			proxy, err := url.Parse(r.opts.Proxy)
+			if err == nil {
+				tr.Proxy = http.ProxyURL(proxy)
+			}
+		}
+
+
+	if len(httpmock.GetCallCountInfo()) == 0 {
+		r.cli = &http.Client{
+			Timeout:   r.opts.timeout,
+			Transport: tr,
 		}
 	}
 
-	r.cli = &http.Client{
-		Timeout:   r.opts.timeout,
-		Transport: tr,
+	if len(httpmock.GetCallCountInfo()) > 0 {
+		r.cli = &http.Client{
+			Timeout:   r.opts.timeout,
+			// Transport: tr,
+		}
 	}
 }
 
