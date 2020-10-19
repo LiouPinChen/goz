@@ -1,4 +1,4 @@
-module github.com/idoubi/goz
+module github.com/LiouPinChen/goz
 
 go 1.15
 
