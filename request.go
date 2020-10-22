@@ -163,7 +163,7 @@ func (r *Request) parseClient() {
 
 		for k := range httpmock.GetCallCountInfo() {
 			// 先用簡單的方式判斷，只要 API 的 Host + Path 相加的路徑符合，就對 API 進行隔離，雖然不是很精準的作法，但對我來說目前夠用
-			if strings.Contains(k, r.req.URL.Host + r.req.URL.Path) {
+			if strings.Contains(k, r.req.URL.Host) {
 				isInMock = true
 			}
 		}
@@ -177,7 +177,7 @@ func (r *Request) parseClient() {
 
 		if !isInMock {
 			r.cli = &http.Client{
-				Timeout: r.opts.timeout,
+				Timeout:   r.opts.timeout,
 				Transport: tr,
 			}
 		}
